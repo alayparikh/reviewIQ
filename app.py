@@ -29,17 +29,23 @@ def analyze():
     own_reviews = fetch_reviews(business_name, source='self', api_key=api_key)
     own_analysis = analyze_reviews(own_reviews)
     
-    all_reviews = own_reviews.copy()
+    all_reviews = []
     competitor_analyses = {}
+    competitor_reviews_dict = {}
     
     # Fetch and analyze for competitors
     for comp in competitors:
         comp_reviews = fetch_reviews(comp, source='competitor', api_key=api_key)
         comp_analysis = analyze_reviews(comp_reviews)
         competitor_analyses[comp] = comp_analysis
-        all_reviews.extend(comp_reviews)
+        competitor_reviews_dict[comp] = comp_reviews
         
     insights = generate_insights(own_reviews, competitor_analyses)
+    
+    # After generating insights, own_reviews are updated with suggested replies
+    all_reviews.extend(own_reviews)
+    for comp_reviews in competitor_reviews_dict.values():
+        all_reviews.extend(comp_reviews)
     
     summary = {
         "business_name": business_name,

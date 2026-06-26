@@ -34,6 +34,7 @@ def init_db():
         text TEXT,
         sentiment_score REAL,
         topics TEXT,
+        suggested_reply TEXT,
         timestamp TEXT,
         FOREIGN KEY (report_id) REFERENCES reports (id)
     )
@@ -53,8 +54,8 @@ def save_report(report_id, business_name, summary_json, reviews):
     
     for review in reviews:
         cursor.execute('''
-        INSERT INTO reviews (report_id, source, business_name, rating, text, sentiment_score, topics, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO reviews (report_id, source, business_name, rating, text, sentiment_score, topics, suggested_reply, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             report_id,
             review.get('source'),
@@ -63,6 +64,7 @@ def save_report(report_id, business_name, summary_json, reviews):
             review.get('text'),
             review.get('sentiment_score'),
             json.dumps(review.get('topics')),
+            review.get('suggested_reply'),
             review.get('timestamp')
         ))
     
