@@ -37,11 +37,17 @@ def analyze_reviews(reviews):
     
     sentiment_label = "Positive" if avg_sentiment > 0.1 else "Negative" if avg_sentiment < -0.1 else "Neutral"
     
+    place_ratings = [r['place_rating'] for r in reviews if r.get('place_rating') is not None]
+    place_rating = place_ratings[0] if place_ratings else None
+    avg_review_rating = sum(ratings) / len(ratings) if ratings else 0
+    
     return {
         "average_sentiment": avg_sentiment,
         "sentiment_label": sentiment_label,
         "top_topics": top_topics,
-        "rating_breakdown": dict(rating_breakdown)
+        "rating_breakdown": dict(rating_breakdown),
+        "place_rating": place_rating,
+        "review_rating": avg_review_rating
     }
 
 def extract_topics(text, limit=5):
@@ -83,24 +89,35 @@ def generate_insights(own_reviews, competitor_analyses):
         
     # How You Stack Up
     own_sentiment = sum(r['sentiment_score'] for r in own_reviews) / len(own_reviews) if own_reviews else 0
-    own_rating = sum(r['rating'] for r in own_reviews) / len(own_reviews) if own_reviews else 0
+    own_review_rating = sum(r['rating'] for r in own_reviews) / len(own_reviews) if own_reviews else 0
+    own_place_rating = own_reviews[0].get('place_rating') if own_reviews and own_reviews[0].get('place_rating') is not None else None
+    own_rating = own_place_rating if own_place_rating is not None else own_review_rating
+
     comparison = []
     for name, analysis in competitor_analyses.items():
         diff = own_sentiment - analysis['average_sentiment']
-        # Calculate avg rating from breakdown
-        total_r = sum(r * count for r, count in analysis['rating_breakdown'].items())
-        total_c = sum(analysis['rating_breakdown'].values())
-        comp_rating = total_r / total_c if total_c > 0 else 0
+        comp_review_rating = sum(r * count for r, count in analysis['rating_breakdown'].items()) / sum(analysis['rating_breakdown'].values()) if analysis['rating_breakdown'] else 0
+        comp_place_rating = analysis.get('place_rating')
+        comp_rating = comp_place_rating if comp_place_rating is not None else comp_review_rating
         
         comparison.append({
             "name": name,
             "sentiment_score": analysis['average_sentiment'],
             "rating": comp_rating,
+            "place_rating": comp_place_rating,
+            "review_rating": comp_review_rating,
             "status": "Ahead" if diff > 0.05 else "Behind" if diff < -0.05 else "On par"
         })
     
     # Add own to comparison for convenience in template
-    own_stats = {"name": "You", "sentiment_score": own_sentiment, "rating": own_rating, "status": "YOU"}
+    own_stats = {
+        "name": "You",
+        "sentiment_score": own_sentiment,
+        "rating": own_rating,
+        "place_rating": own_place_rating,
+        "review_rating": own_review_rating,
+        "status": "YOU"
+    }
         
     # Trending
     trending = {"status": "Stable", "message": "Sentiment has been consistent across recent reviews."}

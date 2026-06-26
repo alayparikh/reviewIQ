@@ -107,14 +107,38 @@
                                     <tr class="table-primary">
                                         <td><strong>{{ report.business_name }} (You)</strong></td>
                                         <td>{{ "%.2f"|format(report.summary.insights.own_stats.sentiment_score) }}</td>
-                                        <td>{{ "%.1f"|format(report.summary.insights.own_stats.rating) }}/5</td>
+                                        <td>
+                                            {{ "%.1f"|format(report.summary.insights.own_stats.rating) }}/5
+                                            {% if report.summary.insights.own_stats.place_rating is not none and report.summary.insights.own_stats.place_rating != report.summary.insights.own_stats.review_rating %}
+                                            <div class="small text-muted">
+                                                Google: {{ "%.1f"|format(report.summary.insights.own_stats.place_rating) }}/5
+                                            </div>
+                                            <div class="small text-muted">
+                                                Sample: {{ "%.1f"|format(report.summary.insights.own_stats.review_rating) }}/5
+                                            </div>
+                                            {% elif report.summary.insights.own_stats.place_rating is not none %}
+                                            <div class="small text-muted">Google overall rating</div>
+                                            {% endif %}
+                                        </td>
                                         <td><span class="badge bg-primary">YOU</span></td>
                                     </tr>
                                     {% for comp in report.summary.insights.comparison %}
                                     <tr>
                                         <td>{{ comp.name }}</td>
                                         <td>{{ "%.2f"|format(comp.sentiment_score) }}</td>
-                                        <td>{{ "%.1f"|format(comp.rating) }}/5</td>
+                                        <td>
+                                            {{ "%.1f"|format(comp.rating) }}/5
+                                            {% if comp.place_rating is not none and comp.place_rating != comp.review_rating %}
+                                            <div class="small text-muted">
+                                                Google: {{ "%.1f"|format(comp.place_rating) }}/5
+                                            </div>
+                                            <div class="small text-muted">
+                                                Sample: {{ "%.1f"|format(comp.review_rating) }}/5
+                                            </div>
+                                            {% elif comp.place_rating is not none %}
+                                            <div class="small text-muted">Google overall rating</div>
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <span class="badge {% if comp.status == 'Ahead' %}bg-success{% elif comp.status == 'Behind' %}bg-danger{% else %}bg-secondary{% endif %}">
                                                 {{ comp.status }}

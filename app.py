@@ -1,8 +1,13 @@
 import uuid
+import os
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from database import init_db, save_report, get_report
 from fetcher import fetch_reviews
 from analyzer import analyze_reviews, generate_insights
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -18,7 +23,7 @@ def analyze():
     business_name = request.form.get('business_name')
     competitors = request.form.get('competitors', '').split(',')
     competitors = [c.strip() for c in competitors if c.strip()]
-    api_key = request.form.get('api_key')
+    api_key = os.getenv("GOOGLE_PLACES_API_KEY")
     
     if not business_name:
         return "Business name is required", 400

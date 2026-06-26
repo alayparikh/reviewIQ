@@ -56,6 +56,7 @@ def fetch_from_places_api(business_name, source, api_key):
     resp = requests.get(details_url, params=params)
     data = resp.json()
     
+    place_rating = data.get('result', {}).get('rating')
     api_reviews = data.get('result', {}).get('reviews', [])
     
     formatted_reviews = []
@@ -64,6 +65,7 @@ def fetch_from_places_api(business_name, source, api_key):
             "source": source,
             "business_name": business_name,
             "rating": r.get('rating', 5),
+            "place_rating": place_rating,
             "text": r.get('text', ""),
             "timestamp": r.get('time', "") # Unix timestamp
         })
