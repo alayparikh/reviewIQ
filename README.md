@@ -24,10 +24,18 @@ GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
 python app.py
 ```
 
-4. Open the app at `http://localhost:3000`, then paste your API key into the "Google Places API Key" field on the form.
+4. Open the app at `http://localhost:3000`.
+
+## Vercel Frontend
+
+A static frontend is available under `frontend/` for hosting on Vercel.
+
+- `frontend/index.html` is the homepage.
+- `frontend/app.js` sends the request to the backend API at `/api/analyze`.
+- If you host the frontend separately, set `API_BASE_URL` in `frontend/app.js` to your backend URL.
 
 ## Notes
 
 - The `.env` file is ignored by Git so your API key stays private.
-- The app currently accepts the API key from the form on the web page.
-- If you want to store the key in `.env` and use it automatically, you can extend the app to load it with a package like `python-dotenv`.
+- The backend loads `GOOGLE_PLACES_API_KEY` automatically from `.env` using `python-dotenv`.
+- The static frontend can be hosted on Vercel and will call the backend API for results.

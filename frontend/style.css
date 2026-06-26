@@ -1,0 +1,35 @@
+:root {
+  --bg-soft: #f8f9fa;
+  --card-border: #e9ecef;
+}
+
+body {
+  background: var(--bg-soft);
+  color: #212529;
+}
+
+.navbar-brand {
+  font-weight: 700;
+}
+
+.info-card {
+  background: white;
+  border: 1px solid var(--card-border);
+  min-height: 140px;
+}
+
+.info-card .display-6 {
+  font-size: 2.5rem;
+}
+
+.card {
+  border: 0;
+}
+
+#reviewList .review-card {
+  border: 1px solid var(--card-border);
+}
+
+.review-badge {
+  font-size: 0.8rem;
+}

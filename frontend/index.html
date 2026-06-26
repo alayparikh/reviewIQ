@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReviewIQ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">ReviewIQ</a>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h1 class="h3 mb-3">ReviewIQ</h1>
+                        <p class="text-muted mb-4">Get actionable review insights for your business and an optional competitor.</p>
+                        <form id="analyzeForm">
+                            <div class="mb-3">
+                                <label for="businessName" class="form-label">Your business</label>
+                                <input type="text" class="form-control form-control-lg" id="businessName" name="business_name" placeholder="e.g. Acme Coffee" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="competitorBusiness" class="form-label">Competitor business (optional)</label>
+                                <input type="text" class="form-control" id="competitorBusiness" name="competitor_business" placeholder="e.g. Coffee House">
+                                <div class="form-text">Leave empty if you only want your own business review insights.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg">Analyze</button>
+                            <div id="formMessage" class="mt-3 text-danger d-none"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="results" class="d-none">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3">Insights</h2>
+                            <div class="row gy-3">
+                                <div class="col-md-4">
+                                    <div class="info-card p-3 rounded">
+                                        <div class="small text-muted">Overall Sentiment</div>
+                                        <div id="sentimentScore" class="display-6 fw-bold"></div>
+                                        <div id="sentimentLabel" class="badge bg-success"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="info-card p-3 rounded">
+                                        <div class="small text-muted">Google overall rating</div>
+                                        <div id="placeRating" class="display-6 fw-bold"></div>
+                                        <div id="reviewRating" class="small text-muted"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="info-card p-3 rounded">
+                                        <div class="small text-muted">What to Fix</div>
+                                        <div id="fixTopics" class="mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row gy-4">
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h3 class="h6 mb-3">Your business</h3>
+                                    <div id="ownStats"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h3 class="h6 mb-3">Competitor comparison</h3>
+                                    <div id="competitorStats"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-body">
+                            <h3 class="h6 mb-3">Recent reviews</h3>
+                            <div id="reviewList" class="row gy-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-muted py-4">
+        <small>ReviewIQ frontend for Vercel. Backend must be available separately.</small>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
