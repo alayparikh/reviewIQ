@@ -24,8 +24,8 @@ def analyze_reviews(reviews):
         total_sentiment += sentiment
         ratings.append(review['rating'])
         
-        # Simple noun phrase extraction for topics
-        review['topics'] = [np for np in blob.noun_phrases] if len(blob.noun_phrases) > 0 else []
+        # Topic extraction via regex (avoids NLTK corpora, unavailable in serverless envs)
+        review['topics'] = extract_topics(review['text'], limit=3)
 
     avg_sentiment = total_sentiment / len(reviews)
     
