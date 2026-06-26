@@ -11,6 +11,8 @@ const fixTopicsEl = document.getElementById('fixTopics');
 const ownStatsEl = document.getElementById('ownStats');
 const competitorStatsEl = document.getElementById('competitorStats');
 const reviewListEl = document.getElementById('reviewList');
+const replyRecommendationsEl = document.getElementById('replyRecommendations');
+const businessSuggestionsEl = document.getElementById('businessSuggestions');
 
 analyzeForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -98,6 +100,45 @@ function renderResults(data) {
         </div>
       `).join('')
     : '<div class="text-muted">No competitor provided.</div>';
+
+  const replyRecs = summary.insights.reply_recommendations || [];
+  replyRecommendationsEl.innerHTML = replyRecs.length
+    ? replyRecs.map(r => `
+        <div class="mb-3 p-3 bg-light rounded border-start border-4 ${r.priority === 'High' ? 'border-danger' : 'border-secondary'}">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="badge ${r.priority === 'High' ? 'bg-danger' : 'bg-secondary'}">${r.priority} priority</span>
+            <span class="text-warning small">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+          </div>
+          <p class="small mb-2">"${escapeHtml(r.text)}"</p>
+          <p class="small text-muted mb-1">"${escapeHtml(r.suggested_reply)}"</p>
+          <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none copy-reply-btn" data-text="${escapeHtml(r.suggested_reply)}">Copy to clipboard</button>
+        </div>
+      `).join('')
+    : '<p class="text-muted small">No recent reviews to respond to.</p>';
+
+  document.querySelectorAll('.copy-reply-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      navigator.clipboard.writeText(button.getAttribute('data-text')).then(() => {
+        const original = button.innerText;
+        button.innerText = 'Copied!';
+        setTimeout(() => { button.innerText = original; }, 2000);
+      });
+    });
+  });
+
+  const suggestions = summary.insights.business_suggestions || [];
+  const priorityBadge = { High: 'bg-danger', Medium: 'bg-warning text-dark', Low: 'bg-success' };
+  businessSuggestionsEl.innerHTML = suggestions.length
+    ? suggestions.map(s => `
+        <div class="mb-3">
+          <div class="d-flex align-items-center mb-1">
+            <span class="badge ${priorityBadge[s.priority] || 'bg-secondary'} me-2">${s.priority}</span>
+            <span class="fw-bold small">${escapeHtml(s.title)}</span>
+          </div>
+          <p class="small text-muted mb-0">${escapeHtml(s.suggestion)}</p>
+        </div>
+      `).join('')
+    : '<p class="text-muted small">No suggestions yet.</p>';
 
   reviewListEl.innerHTML = data.reviews.map(review => `
     <div class="col-md-6">

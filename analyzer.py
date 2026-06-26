@@ -139,27 +139,51 @@ def generate_insights(own_reviews, competitor_analyses):
         elif diff < -0.05:
             trending = {"status": "Declining", "message": f"Sentiment has trended downward by {abs(diff)*100:.0f}% recently. Investigation recommended."}
 
-    # Add suggested replies for own reviews
-    for review in own_reviews:
-        if review['sentiment_score'] < 0:
-            review['suggested_reply'] = generate_suggested_reply(review)
-        else:
-            review['suggested_reply'] = None
+    # Add suggested replies for every own review, sorted most-recent first so the
+    # business can see what to respond to next
+    recent_own_reviews = sorted(own_reviews, key=lambda r: r.get('timestamp') or 0, reverse=True)
+    for review in recent_own_reviews:
+        review['suggested_reply'] = generate_suggested_reply(review)
+    reply_recommendations = [
+        {
+            "text": r['text'],
+            "rating": r['rating'],
+            "sentiment_score": r['sentiment_score'],
+            "suggested_reply": r['suggested_reply'],
+            "priority": "High" if r['sentiment_score'] < 0 else "Low"
+        }
+        for r in recent_own_reviews[:5]
+    ]
+
+    business_suggestions = generate_business_suggestions(
+        own_stats, what_to_fix, what_to_shout_about, trending, comparison
+    )
 
     return {
         "what_to_shout_about": what_to_shout_about,
         "what_to_fix": what_to_fix,
         "comparison": comparison,
         "own_stats": own_stats,
-        "trending": trending
+        "trending": trending,
+        "reply_recommendations": reply_recommendations,
+        "business_suggestions": business_suggestions
     }
 
 def generate_suggested_reply(review):
     """
-    Generates a professional response template for a negative review.
+    Generates a professional response template tailored to a review's sentiment.
     """
     text = review['text'].lower()
-    
+    sentiment = review.get('sentiment_score', 0)
+
+    if sentiment >= 0.2:
+        if "staff" in text or "service" in text:
+            return "Thank you so much for the kind words about our team! We'll be sure to pass along your compliments. We hope to see you again soon!"
+        return "Thank you for the wonderful review! We're thrilled you had a great experience, and we look forward to welcoming you back soon."
+
+    if sentiment > -0.05:
+        return "Thanks for taking the time to share your feedback. We're always looking to improve, so if there's anything specific we could do better, we'd love to hear it."
+
     if "wait" in text or "long" in text:
         return "Hi, thank you for your feedback. We're sorry about the long wait during your visit. We're working on improving our staffing to ensure a faster experience. We hope to see you again soon!"
     elif "price" in text or "expensive" in text:
@@ -170,3 +194,59 @@ def generate_suggested_reply(review):
         return "We apologize for the experience you had with our team. Providing excellent service is our top priority, and we'll use your feedback for further training. We'd love the chance to make it right."
     else:
         return "Thank you for your feedback. We're sorry we didn't meet your expectations. We'd like to learn more about your experience to improve our service. Please feel free to reach out to us directly."
+
+def generate_business_suggestions(own_stats, what_to_fix, what_to_shout_about, trending, comparison):
+    """
+    Curates prioritized, actionable suggestions for improving the business and
+    earning more positive reviews, synthesized from the rest of the analysis.
+    """
+    suggestions = []
+
+    for item in what_to_fix:
+        suggestions.append({
+            "priority": "High",
+            "title": f"Address recurring '{item['topic']}' complaints",
+            "suggestion": item['action']
+        })
+
+    if trending.get('status') == 'Declining':
+        suggestions.append({
+            "priority": "High",
+            "title": "Reverse declining sentiment",
+            "suggestion": trending['message'] + " Consider following up directly with recent unhappy customers."
+        })
+
+    behind_competitors = [c for c in comparison if c.get('status') == 'Behind']
+    if behind_competitors:
+        names = ", ".join(c['name'] for c in behind_competitors)
+        suggestions.append({
+            "priority": "Medium",
+            "title": f"Close the gap with {names}",
+            "suggestion": "You're trailing on sentiment versus this competitor. Review their top-rated reviews for ideas on what customers value most."
+        })
+
+    if what_to_shout_about:
+        topics = ", ".join(what_to_shout_about)
+        suggestions.append({
+            "priority": "Medium",
+            "title": "Promote what customers already love",
+            "suggestion": f"Customers consistently praise {topics}. Highlight these in your marketing, social posts, and review-request follow-ups to attract more positive reviews."
+        })
+
+    if own_stats.get('sentiment_score', 0) > 0.1 and not behind_competitors:
+        suggestions.append({
+            "priority": "Low",
+            "title": "Turn happy customers into reviewers",
+            "suggestion": "Sentiment is strong. Ask satisfied customers for a review right after a positive interaction (e.g. a QR code at checkout) to build review volume while sentiment is high."
+        })
+
+    if not suggestions:
+        suggestions.append({
+            "priority": "Low",
+            "title": "Keep monitoring",
+            "suggestion": "No major issues detected. Keep collecting reviews to track trends over time."
+        })
+
+    priority_order = {"High": 0, "Medium": 1, "Low": 2}
+    suggestions.sort(key=lambda s: priority_order.get(s['priority'], 3))
+    return suggestions

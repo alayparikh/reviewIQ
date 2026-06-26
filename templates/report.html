@@ -167,6 +167,52 @@
             </div>
         </div>
 
+        <div class="row g-4 mb-5">
+            <!-- Reply Recommendations -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">What to Reply To</h5>
+                        <p class="text-muted small">Suggested responses for your most recent reviews.</p>
+                        {% for r in report.summary.insights.reply_recommendations %}
+                        <div class="mb-3 p-3 bg-light rounded border-start border-4 {% if r.priority == 'High' %}border-danger{% else %}border-secondary{% endif %}">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge {% if r.priority == 'High' %}bg-danger{% else %}bg-secondary{% endif %}">{{ r.priority }} priority</span>
+                                <span class="text-warning small">
+                                    {% for i in range(r.rating) %}★{% endfor %}{% for i in range(5 - r.rating) %}☆{% endfor %}
+                                </span>
+                            </div>
+                            <p class="small mb-2">"{{ r.text }}"</p>
+                            <p class="small text-muted mb-1 italic">"{{ r.suggested_reply }}"</p>
+                            <button class="btn btn-sm btn-link p-0 text-decoration-none copy-btn" data-text="{{ r.suggested_reply }}">Copy to clipboard</button>
+                        </div>
+                        {% endfor %}
+                        {% if not report.summary.insights.reply_recommendations %}
+                        <p class="text-muted small">No recent reviews to respond to.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Suggestions -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Suggestions to Improve & Get More Positive Reviews</h5>
+                        {% for s in report.summary.insights.business_suggestions %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <span class="badge {% if s.priority == 'High' %}bg-danger{% elif s.priority == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %} me-2">{{ s.priority }}</span>
+                                <span class="fw-bold small">{{ s.title }}</span>
+                            </div>
+                            <p class="small text-muted mb-0">{{ s.suggestion }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Raw Reviews Section -->
         <div class="mb-5">
             <h3 class="h4 mb-4">Recent Reviews</h3>
