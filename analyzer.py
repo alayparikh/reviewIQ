@@ -1,0 +1,155 @@
+from textblob import TextBlob
+from collections import Counter
+import re
+
+def analyze_reviews(reviews):
+    """
+    Analyzes a list of reviews for sentiment and common topics.
+    """
+    if not reviews:
+        return {
+            "average_sentiment": 0,
+            "sentiment_label": "Neutral",
+            "top_topics": [],
+            "rating_breakdown": {}
+        }
+        
+    total_sentiment = 0
+    ratings = []
+    
+    for review in reviews:
+        blob = TextBlob(review['text'])
+        sentiment = blob.sentiment.polarity
+        review['sentiment_score'] = sentiment
+        total_sentiment += sentiment
+        ratings.append(review['rating'])
+        
+        # Simple noun phrase extraction for topics
+        review['topics'] = [np for np in blob.noun_phrases] if len(blob.noun_phrases) > 0 else []
+
+    avg_sentiment = total_sentiment / len(reviews)
+    
+    # Topic extraction (general)
+    all_text = " ".join([r['text'] for r in reviews])
+    top_topics = extract_topics(all_text)
+    
+    rating_breakdown = Counter(ratings)
+    
+    sentiment_label = "Positive" if avg_sentiment > 0.1 else "Negative" if avg_sentiment < -0.1 else "Neutral"
+    
+    return {
+        "average_sentiment": avg_sentiment,
+        "sentiment_label": sentiment_label,
+        "top_topics": top_topics,
+        "rating_breakdown": dict(rating_breakdown)
+    }
+
+def extract_topics(text, limit=5):
+    words = re.findall(r'\w+', text.lower())
+    stop_words = {'the', 'and', 'a', 'to', 'of', 'in', 'is', 'i', 'was', 'it', 'for', 'at', 'with', 'on', 'this', 'but', 'here', 'staff', 'service', 'very', 'had', 'place', 'were', 'they', 'you', 'my'}
+    filtered_words = [w for w in words if w not in stop_words and len(w) > 3]
+    return [topic for topic, count in Counter(filtered_words).most_common(limit)]
+
+def generate_insights(own_reviews, competitor_analyses):
+    """
+    Generates actionable insights from analyzed reviews.
+    """
+    positive_reviews = [r for r in own_reviews if r['sentiment_score'] > 0.2]
+    negative_reviews = [r for r in own_reviews if r['sentiment_score'] < 0]
+    
+    # What to Shout About (formerly What People Love)
+    pos_text = " ".join([r['text'] for r in positive_reviews])
+    what_to_shout_about = extract_topics(pos_text, limit=3)
+    
+    # What to Fix
+    neg_text = " ".join([r['text'] for r in negative_reviews])
+    what_to_fix_topics = extract_topics(neg_text, limit=3)
+    
+    # Suggested actions based on negative topics
+    action_map = {
+        "wait": "Improve staffing during peak hours to reduce wait times.",
+        "price": "Review pricing strategy or highlight premium value in marketing.",
+        "clean": "Schedule more frequent cleaning rotations.",
+        "staff": "Conduct customer service training for front-line employees.",
+        "quality": "Investigate quality control in the production process.",
+        "food": "Audit menu items for consistency and taste.",
+        "service": "Look into specific bottlenecks in the service workflow."
+    }
+    
+    what_to_fix = []
+    for topic in what_to_fix_topics:
+        action = action_map.get(topic, "Monitor customer feedback closely on this topic.")
+        what_to_fix.append({"topic": topic, "action": action})
+        
+    # How You Stack Up
+    own_sentiment = sum(r['sentiment_score'] for r in own_reviews) / len(own_reviews) if own_reviews else 0
+    own_rating = sum(r['rating'] for r in own_reviews) / len(own_reviews) if own_reviews else 0
+    comparison = []
+    for name, analysis in competitor_analyses.items():
+        diff = own_sentiment - analysis['average_sentiment']
+        # Calculate avg rating from breakdown
+        total_r = sum(r * count for r, count in analysis['rating_breakdown'].items())
+        total_c = sum(analysis['rating_breakdown'].values())
+        comp_rating = total_r / total_c if total_c > 0 else 0
+        
+        comparison.append({
+            "name": name,
+            "sentiment_score": analysis['average_sentiment'],
+            "rating": comp_rating,
+            "status": "Ahead" if diff > 0.05 else "Behind" if diff < -0.05 else "On par"
+        })
+    
+    # Add own to comparison for convenience in template
+    own_stats = {"name": "You", "sentiment_score": own_sentiment, "rating": own_rating, "status": "YOU"}
+        
+    # Trending
+    trending = {"status": "Stable", "message": "Sentiment has been consistent across recent reviews."}
+    if len(own_reviews) >= 3:
+        # Sort reviews by timestamp if available, else assume they are already sorted recent-first
+        sorted_reviews = sorted(own_reviews, key=lambda x: x.get('timestamp') or 0, reverse=True)
+        
+        # Split into two halves
+        mid = len(sorted_reviews) // 2
+        recent_half = sorted_reviews[:mid]
+        older_half = sorted_reviews[mid:]
+        
+        recent_avg = sum(r['sentiment_score'] for r in recent_half) / len(recent_half)
+        older_avg = sum(r['sentiment_score'] for r in older_half) / len(older_half)
+        
+        diff = recent_avg - older_avg
+        if diff > 0.05:
+            trending = {"status": "Improving", "message": f"Sentiment has trended upward by {diff*100:.0f}% in the most recent reviews."}
+        elif diff < -0.05:
+            trending = {"status": "Declining", "message": f"Sentiment has trended downward by {abs(diff)*100:.0f}% recently. Investigation recommended."}
+
+    # Add suggested replies for own reviews
+    for review in own_reviews:
+        if review['sentiment_score'] < 0:
+            review['suggested_reply'] = generate_suggested_reply(review)
+        else:
+            review['suggested_reply'] = None
+
+    return {
+        "what_to_shout_about": what_to_shout_about,
+        "what_to_fix": what_to_fix,
+        "comparison": comparison,
+        "own_stats": own_stats,
+        "trending": trending
+    }
+
+def generate_suggested_reply(review):
+    """
+    Generates a professional response template for a negative review.
+    """
+    text = review['text'].lower()
+    
+    if "wait" in text or "long" in text:
+        return "Hi, thank you for your feedback. We're sorry about the long wait during your visit. We're working on improving our staffing to ensure a faster experience. We hope to see you again soon!"
+    elif "price" in text or "expensive" in text:
+        return "Thank you for sharing your thoughts. We strive to provide premium quality and service, but we understand your concern about pricing. We regularly review our menu to ensure we offer great value."
+    elif "clean" in text or "dirty" in text:
+        return "We're very sorry to hear about the cleanliness issue. We maintain high standards and will address this with our team immediately. Thank you for bringing it to our attention."
+    elif "rude" in text or "staff" in text:
+        return "We apologize for the experience you had with our team. Providing excellent service is our top priority, and we'll use your feedback for further training. We'd love the chance to make it right."
+    else:
+        return "Thank you for your feedback. We're sorry we didn't meet your expectations. We'd like to learn more about your experience to improve our service. Please feel free to reach out to us directly."

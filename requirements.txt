@@ -1,0 +1,6 @@
+flask
+requests
+textblob
+vaderSentiment
+beautifulsoup4
+lxml

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReviewSense Insights - {{ report.business_name }}</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .insight-card { border-left: 5px solid; }
+        .love-card { border-left-color: #198754; }
+        .fix-card { border-left-color: #dc3545; }
+        .trend-card { border-left-color: #0dcaf0; }
+        .score-display { font-size: 3rem; font-weight: 800; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">ReviewSense</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h1 class="h2 mb-1">Insights for <span class="text-primary">{{ report.business_name }}</span></h1>
+                <p class="text-muted mb-0">Generated on {{ report.created_at }}</p>
+            </div>
+            <a href="/" class="btn btn-outline-secondary btn-sm">Analyze Another</a>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <!-- Sentiment Score -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <h5 class="text-muted text-uppercase small fw-bold mb-3">Overall Sentiment</h5>
+                        <div class="score-display {% if report.summary.own_analysis.average_sentiment > 0.1 %}text-success{% elif report.summary.own_analysis.average_sentiment < -0.1 %}text-danger{% else %}text-warning{% endif %}">
+                            {{ "%.2f"|format(report.summary.own_analysis.average_sentiment) }}
+                        </div>
+                        <span class="badge {% if report.summary.own_analysis.average_sentiment > 0.1 %}bg-success{% elif report.summary.own_analysis.average_sentiment < -0.1 %}bg-danger{% else %}bg-warning text-dark{% endif %} px-3 py-2">
+                            {{ report.summary.own_analysis.sentiment_label }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What to Shout About -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 insight-card love-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-success"><i class="bi bi-star-fill me-2"></i>What to Shout About</h5>
+                        <ul class="list-group list-group-flush mt-3">
+                            {% for topic in report.summary.insights.what_to_shout_about %}
+                            <li class="list-group-item bg-transparent border-0 ps-0">
+                                <span class="badge rounded-pill bg-success-subtle text-success me-2">#</span> {{ topic|capitalize }}
+                            </li>
+                            {% endfor %}
+                            {% if not report.summary.insights.what_to_shout_about %}
+                            <li class="list-group-item bg-transparent border-0 ps-0 text-muted small">Not enough data yet.</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What to Fix -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 insight-card fix-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>What to Fix</h5>
+                        <div class="mt-3">
+                            {% for item in report.summary.insights.what_to_fix %}
+                            <div class="mb-3">
+                                <div class="fw-bold small text-uppercase">{{ item.topic }}</div>
+                                <div class="small text-muted">{{ item.action }}</div>
+                            </div>
+                            {% endfor %}
+                            {% if not report.summary.insights.what_to_fix %}
+                            <p class="text-muted small">Everything looks good! No major complaints found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- How You Stack Up -->
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">How You Stack Up</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th>BUSINESS</th>
+                                        <th>SENTIMENT</th>
+                                        <th>RATING</th>
+                                        <th>STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-primary">
+                                        <td><strong>{{ report.business_name }} (You)</strong></td>
+                                        <td>{{ "%.2f"|format(report.summary.insights.own_stats.sentiment_score) }}</td>
+                                        <td>{{ "%.1f"|format(report.summary.insights.own_stats.rating) }}/5</td>
+                                        <td><span class="badge bg-primary">YOU</span></td>
+                                    </tr>
+                                    {% for comp in report.summary.insights.comparison %}
+                                    <tr>
+                                        <td>{{ comp.name }}</td>
+                                        <td>{{ "%.2f"|format(comp.sentiment_score) }}</td>
+                                        <td>{{ "%.1f"|format(comp.rating) }}/5</td>
+                                        <td>
+                                            <span class="badge {% if comp.status == 'Ahead' %}bg-success{% elif comp.status == 'Behind' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                {{ comp.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 insight-card trend-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">Trending</h5>
+                        <div class="mt-4 text-center">
+                            <div class="h4 text-info mb-2">{{ report.summary.insights.trending.status }}</div>
+                            <p class="small text-muted">{{ report.summary.insights.trending.message }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw Reviews Section -->
+        <div class="mb-5">
+            <h3 class="h4 mb-4">Recent Reviews</h3>
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+                {% for review in report.reviews %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6 class="card-subtitle text-primary">{{ review.business_name }}</h6>
+                                <span class="text-warning small">
+                                    {% for i in range(review.rating) %}★{% endfor %}
+                                    {% for i in range(5 - review.rating) %}☆{% endfor %}
+                                </span>
+                            </div>
+                            <p class="card-text small text-dark">{{ review.text }}</p>
+                            {% if review.suggested_reply %}
+                            <div class="mt-3 p-3 bg-light rounded border-start border-primary border-4">
+                                <h6 class="text-primary small fw-bold mb-2">Suggested Reply:</h6>
+                                <p class="small text-muted mb-0 italic">"{{ review.suggested_reply }}"</p>
+                                <button class="btn btn-sm btn-link p-0 mt-1 text-decoration-none copy-btn" data-text="{{ review.suggested_reply }}">Copy to clipboard</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pt-0 pb-3 d-flex justify-content-between">
+                            <small class="text-muted italic">Score: {{ "%.2f"|format(review.sentiment_score) }}</small>
+                            <span class="badge bg-light text-muted border small">{{ review.source }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 py-5 border-top bg-white">
+        <div class="container text-center text-muted">
+            <small>&copy; 2026 ReviewSense. Making reviews actionable.</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons (optional for future) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script>
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const text = button.getAttribute('data-text');
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = button.innerText;
+                    button.innerText = 'Copied!';
+                    setTimeout(() => {
+                        button.innerText = originalText;
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
