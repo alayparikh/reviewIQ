@@ -1,0 +1,67 @@
+{
+  "analyzer.py": {
+    "mtime": 1782507075.4103,
+    "ast_hash": "4949408e9fb2e83d16f805708f66fbc7",
+    "semantic_hash": "4949408e9fb2e83d16f805708f66fbc7"
+  },
+  "app.py": {
+    "mtime": 1782508519.965514,
+    "ast_hash": "2a9251f4cb1b99bf69ed994ed20855c2",
+    "semantic_hash": "2a9251f4cb1b99bf69ed994ed20855c2"
+  },
+  "database.py": {
+    "mtime": 1782506016.6861637,
+    "ast_hash": "c0ba5fc7051e02293b7c7d59c788f63e",
+    "semantic_hash": "c0ba5fc7051e02293b7c7d59c788f63e"
+  },
+  "fetcher.py": {
+    "mtime": 1782507011.505858,
+    "ast_hash": "1487a4680e66e0a4ce660fb63b023715",
+    "semantic_hash": "1487a4680e66e0a4ce660fb63b023715"
+  },
+  "frontend/app.js": {
+    "mtime": 1782508525.5413244,
+    "ast_hash": "8fd80c9e4bb2a9a78b1158d3c6f4a6fe",
+    "semantic_hash": "8fd80c9e4bb2a9a78b1158d3c6f4a6fe"
+  },
+  "static/js/app.js": {
+    "mtime": 1782506016.686622,
+    "ast_hash": "49a80a2adaff6b523d462ef1870ec3c4",
+    "semantic_hash": "49a80a2adaff6b523d462ef1870ec3c4"
+  },
+  "vercel.json": {
+    "mtime": 1782508527.9620032,
+    "ast_hash": "5237ac623513b473bf42607ff580bc62",
+    "semantic_hash": "5237ac623513b473bf42607ff580bc62"
+  },
+  "README.md": {
+    "mtime": 1782508557.9411435,
+    "ast_hash": "4763f249f5cf9aa5dfcc5c0a56e34e81",
+    "semantic_hash": "4763f249f5cf9aa5dfcc5c0a56e34e81"
+  },
+  "frontend/README.md": {
+    "mtime": 1782508557.9411442,
+    "ast_hash": "056ee1f1a3d893f770e8464bafb2f9d6",
+    "semantic_hash": "056ee1f1a3d893f770e8464bafb2f9d6"
+  },
+  "frontend/index.html": {
+    "mtime": 1782508523.7136838,
+    "ast_hash": "ee7f9bab5c6dfc8c54d67edf40a5beb7",
+    "semantic_hash": "ee7f9bab5c6dfc8c54d67edf40a5beb7"
+  },
+  "requirements.txt": {
+    "mtime": 1782508522.1478834,
+    "ast_hash": "73e1791d19fbbad1285eaf8ed749847a",
+    "semantic_hash": "73e1791d19fbbad1285eaf8ed749847a"
+  },
+  "templates/index.html": {
+    "mtime": 1782506016.6867588,
+    "ast_hash": "c4efd83a720760a3c09d4768a04d0ca6",
+    "semantic_hash": "c4efd83a720760a3c09d4768a04d0ca6"
+  },
+  "templates/report.html": {
+    "mtime": 1782507086.4186316,
+    "ast_hash": "6986b689f6b4e99d1f1a6ac01e17ba8c",
+    "semantic_hash": "6986b689f6b4e99d1f1a6ac01e17ba8c"
+  }
+}
